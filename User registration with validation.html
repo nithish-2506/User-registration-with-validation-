@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Registration & Validation</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
+    margin: 0;
+    padding: 0;
+  }
+  .navbar {
+    background: #0a3d62;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 25px;
+  }
+  .navbar h2 { margin: 0; }
+  .navbar a {
+    color: #fff;
+    margin-left: 20px;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  .container {
+    width: 350px;
+    background: #fff;
+    margin: 60px auto;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  .container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  button {
+    width: 100%;
+    padding: 10px;
+    background: #0a3d62;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .msg {
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+  }
+  .dashboard {
+    text-align: center;
+    margin-top: 50px;
+  }
+</style>
+</head>
+<body>
+
+<div class="navbar">
+  <h2>User Portal</h2>
+  <div>
+    <a href="#" onclick="showSection('register')">Register</a>
+    <a href="#" onclick="showSection('login')">Login</a>
+    <a href="#" onclick="showSection('dashboard')">Dashboard</a>
+  </div>
+</div>
+
+<div id="register" class="container">
+  <h2>Register</h2>
+  <input type="text" id="regName" placeholder="Full Name" required>
+  <input type="email" id="regEmail" placeholder="Email Address" required>
+  <input type="password" id="regPass" placeholder="Password" required>
+  <button onclick="registerUser()">Register</button>
+  <p id="regMsg" class="msg"></p>
+</div>
+
+<div id="login" class="container" style="display:none;">
+  <h2>Login</h2>
+  <input type="email" id="logEmail" placeholder="Email" required>
+  <input type="password" id="logPass" placeholder="Password" required>
+  <button onclick="loginUser()">Login</button>
+  <p id="logMsg" class="msg"></p>
+</div>
+
+<div id="dashboard" class="dashboard" style="display:none;">
+  <h2>Welcome, <span id="userName"></span>!</h2>
+  <p>Email: <span id="userEmail"></span></p>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+  function showSection(section) {
+    document.getElementById("register").style.display = "none";
+    document.getElementById("login").style.display = "none";
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById(section).style.display = "block";
+    if (section === "dashboard") loadDashboard();
+  }
+
+  function registerUser() {
+    const name = document.getElementById("regName").value.trim();
+    const email = document.getElementById("regEmail").value.trim();
+    const pass = document.getElementById("regPass").value;
+    const msg = document.getElementById("regMsg");
+
+    if (!name || !email || !pass) {
+      msg.style.color = "red";
+      msg.innerText = "All fields are required!";
+      return;
+    }
+
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+    if (users.find(u => u.email === email)) {
+      msg.style.color = "red";
+      msg.innerText = "Email already registered!";
+      return;
+    }
+
+    users.push({ name, email, password: pass });
+    localStorage.setItem("users", JSON.stringify(users));
+    msg.style.color = "green";
+    msg.innerText = "Registration successful!";
+    document.getElementById("regName").value = "";
+    document.getElementById("regEmail").value = "";
+    document.getElementById("regPass").value = "";
+  }
+
+  function loginUser() {
+    const email = document.getElementById("logEmail").value.trim();
+    const pass = document.getElementById("logPass").value;
+    const msg = document.getElementById("logMsg");
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+    let user = users.find(u => u.email === email && u.password === pass);
+
+    if (user) {
+      localStorage.setItem("loggedInUser", JSON.stringify(user));
+      msg.style.color = "green";
+      msg.innerText = "Login successful!";
+      showSection("dashboard");
+    } else {
+      msg.style.color = "red";
+      msg.innerText = "Invalid credentials!";
+    }
+  }
+
+  function loadDashboard() {
+    let user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!user) {
+      document.querySelector(".dashboard").innerHTML = "<h2>Please login first.</h2>";
+      return;
+    }
+    document.getElementById("userName").innerText = user.name;
+    document.getElementById("userEmail").innerText = user.email;
+  }
+
+  function logout() {
+    localStorage.removeItem("loggedInUser");
+    showSection("login");
+  }
+</script>
+
+</body>
+</html>
